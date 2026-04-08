@@ -49,6 +49,7 @@ endif ()
 # ---------------------------------------------------------------------------
 add_library(ImGuiEx
         src/ImGuiEx.cpp
+        src/imgui_layout.cpp
 )
 
 target_include_directories(ImGuiEx
