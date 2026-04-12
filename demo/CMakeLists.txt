@@ -1,95 +1,114 @@
 # ---------------------------------------------------------------------------
-# add_imgui_demo(<target> <sources...>)
-#
-# Creates a WIN32 executable that compiles the shared DemoApp.cpp framework
-# together with the provided demo sources.  Links the minimum set of libs
-# required to run an ImGui Win32+DX11 application.
-# DemoApp.h is accessible via the include path (CMAKE_CURRENT_SOURCE_DIR).
+# DemoFramework — shared Win32/DX11/ImGui render loop
+# Built once and linked by all demos (no dependency stacking).
 # ---------------------------------------------------------------------------
-function(add_imgui_demo target)
+add_library(DemoFramework STATIC
+        DemoFramework.cpp
+)
+
+target_include_directories(DemoFramework PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(DemoFramework PRIVATE
+        imgui
+        imgui-win32
+        imgui-dx11
+        d3d11
+)
+
+# ---------------------------------------------------------------------------
+# add_imgui_demo_standalone(<target> <extension_lib> <sources...>)
+#
+# Creates a self-contained WIN32 executable that links:
+#   - DemoFramework (once, shared by all demos)
+#   - Only the specific extension library needed
+# This prevents dependency stacking where the last demo depends on all others.
+# ---------------------------------------------------------------------------
+function(add_imgui_demo_standalone target extension_lib)
     add_executable(${target} WIN32
-            DemoApp.cpp
             ${ARGN}
     )
-    target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(${target} PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    )
     target_link_libraries(${target} PRIVATE
-            imgui
-            imgui-win32
-            imgui-dx11
-            d3d11
+            DemoFramework
+            ${extension_lib}
     )
 endfunction()
 
 # ---------------------------------------------------------------------------
 # ImGui built-in demo  (always built)
 # ---------------------------------------------------------------------------
-add_imgui_demo(ImGuiDemo imgui/main.cpp)
+add_executable(ImGuiDemo WIN32 imgui/main.cpp)
+target_include_directories(ImGuiDemo PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include
+)
+target_link_libraries(ImGuiDemo PRIVATE DemoFramework)
 
 # ---------------------------------------------------------------------------
 # Extension demos  (built only when the matching option is ON)
+# Each demo links ONLY its specific extension, not the full ImGuiEx stack.
 # ---------------------------------------------------------------------------
-if (ENABLE_COLOR_TEXT_EDIT)
-    add_imgui_demo(ColorTextEditDemo color_text_edit/main.cpp)
-    target_link_libraries(ColorTextEditDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_COLOR_TEXT_EDIT)
+    add_imgui_demo_standalone(ColorTextEditDemo ImGuiColorTextEdit color_text_edit/main.cpp)
 endif ()
 
-if (ENABLE_NODE_EDITOR)
-    add_imgui_demo(NodeEditorDemo node_editor/main.cpp)
-    target_link_libraries(NodeEditorDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_NODE_EDITOR)
+    add_imgui_demo_standalone(NodeEditorDemo ImGuiNodeEditor node_editor/main.cpp)
 endif ()
 
-if (ENABLE_IMNODES)
-    add_imgui_demo(ImNodesDemo imnodes/main.cpp)
-    target_link_libraries(ImNodesDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_IMNODES)
+    add_imgui_demo_standalone(ImNodesDemo imnodes imnodes/main.cpp)
 endif ()
 
-if (ENABLE_NODE_FLOW)
-    add_imgui_demo(ImNodeFlowDemo node_flow/main.cpp)
-    target_link_libraries(ImNodeFlowDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_NODE_FLOW)
+    add_imgui_demo_standalone(ImNodeFlowDemo ImNodeFlow node_flow/main.cpp)
 endif ()
 
-if (ENABLE_IMPLOT)
-    add_imgui_demo(ImPlotDemo implot/main.cpp)
-    target_link_libraries(ImPlotDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_IMPLOT)
+    add_imgui_demo_standalone(ImPlotDemo implot implot/main.cpp)
 endif ()
 
-if (ENABLE_IMPLOT3D)
-    add_imgui_demo(ImPlot3DDemo implot3d/main.cpp)
-    target_link_libraries(ImPlot3DDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_IMPLOT3D)
+    add_imgui_demo_standalone(ImPlot3DDemo implot3d implot3d/main.cpp)
 endif ()
 
-if (ENABLE_IMGUI_KNOBS)
-    add_imgui_demo(ImGuiKnobsDemo imgui_knobs/main.cpp)
-    target_link_libraries(ImGuiKnobsDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_IMGUI_KNOBS)
+    add_imgui_demo_standalone(ImGuiKnobsDemo imguiknobs imgui_knobs/main.cpp)
 endif ()
 
-if (ENABLE_IMSPINNER)
-    add_imgui_demo(ImSpinnerDemo imspinner/main.cpp)
-    target_link_libraries(ImSpinnerDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_IMSPINNER)
+    add_imgui_demo_standalone(ImSpinnerDemo imspinner imspinner/main.cpp)
 endif ()
 
-if (ENABLE_IMGUI_TOGGLE)
-    add_imgui_demo(ImGuiToggleDemo imgui_toggle/main.cpp)
-    target_link_libraries(ImGuiToggleDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_IMGUI_TOGGLE)
+    add_imgui_demo_standalone(ImGuiToggleDemo imgui_toggle imgui_toggle/main.cpp)
 endif ()
 
-if (ENABLE_SPLITTER)
-    add_imgui_demo(SplitterDemo splitter/main.cpp)
-    target_link_libraries(SplitterDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_SPLITTER)
+    add_executable(SplitterDemo WIN32 splitter/main.cpp)
+    target_include_directories(SplitterDemo PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    )
+    target_link_libraries(SplitterDemo PRIVATE DemoFramework)
 endif ()
 
-if (ENABLE_STACK_LAYOUT)
-    add_imgui_demo(StackLayoutDemo stack_layout/main.cpp)
-    target_link_libraries(StackLayoutDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_STACK_LAYOUT)
+    add_executable(StackLayoutDemo WIN32 stack_layout/main.cpp)
+    target_include_directories(StackLayoutDemo PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    )
+    target_link_libraries(StackLayoutDemo PRIVATE DemoFramework imgui_stacklayout)
 endif ()
 
-if (ENABLE_DATE_PICKER)
-    add_imgui_demo(DatePickerDemo date_picker/main.cpp)
-    target_link_libraries(DatePickerDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_DATE_PICKER)
+    add_imgui_demo_standalone(DatePickerDemo ImGuiDatePicker date_picker/main.cpp)
 endif ()
 
-if (ENABLE_IMGUI_KEYBOARD)
-    add_imgui_demo(ImGuiKeyboardDemo imgui_keyboard/main.cpp)
-    target_link_libraries(ImGuiKeyboardDemo PRIVATE ImGuiEx)
+if (IMGUIEX_ENABLE_IMGUI_KEYBOARD)
+    add_imgui_demo_standalone(ImGuiKeyboardDemo imgui_keyboard imgui_keyboard/main.cpp)
 endif ()
 

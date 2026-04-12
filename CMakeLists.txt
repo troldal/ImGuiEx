@@ -6,6 +6,25 @@ set(CMAKE_CXX_STANDARD 23)
 include(FetchContent)
 
 # ---------------------------------------------------------------------------
+# FreeType support (optional)
+# ---------------------------------------------------------------------------
+option(IMGUIEX_ENABLE_FREETYPE "Enable FreeType support for ImGui font rendering" ON)
+
+if (IMGUIEX_ENABLE_FREETYPE)
+    FetchContent_Declare(
+            freetype
+            GIT_REPOSITORY https://github.com/freetype/freetype.git
+            GIT_TAG        master
+            GIT_SHALLOW    TRUE
+    )
+    FetchContent_MakeAvailable(freetype)
+
+    set(IMGUI_ENABLE_FREETYPE ON CACHE BOOL "" FORCE)
+else ()
+    set(IMGUI_ENABLE_FREETYPE OFF CACHE BOOL "" FORCE)
+endif ()
+
+# ---------------------------------------------------------------------------
 # ImGui (docking branch) — fetched and configured via a community CMakeLists
 # ---------------------------------------------------------------------------
 FetchContent_Declare(
@@ -22,9 +41,6 @@ if (POLICY CMP0169)
     cmake_policy(SET CMP0169 OLD)
 endif ()
 
-# The only community-default we override: Freetype triggers a hard FATAL_ERROR
-# when not found, and we don't want to mandate it as a system dependency.
-set(IMGUI_ENABLE_FREETYPE OFF CACHE BOOL "" FORCE)
 
 FetchContent_GetProperties(imgui)
 if (NOT imgui_POPULATED)
@@ -38,25 +54,53 @@ if (NOT imgui_POPULATED)
             EXPECTED_HASH SHA256=fd62f69364ce13a4f7633a9b50ae6672c466bcc44be60c69c45c0c6e225bb086
     )
 
+    # If FreeType was built via FetchContent, patch ImGui's CMakeLists so it
+    # can find the already-available `freetype` target.  The community CMakeLists
+    # calls find_package(Freetype) which won't find a FetchContent-built lib.
+    # We replace the entire FreeType discovery block with a direct link to the
+    # `freetype` target that FetchContent already created.
+    if (IMGUIEX_ENABLE_FREETYPE)
+        file(READ "${imgui_SOURCE_DIR}/CMakeLists.txt" _imgui_cmake)
+        string(FIND "${_imgui_cmake}" "TARGET freetype" _ft_patch_done)
+        if (_ft_patch_done EQUAL -1)
+            # 1. Disable find_package(Freetype) — it won't find our FetchContent build
+            string(REPLACE
+                "find_package(Freetype)"
+                "set(FREETYPE_FOUND FALSE) # patched by ImGuiEx"
+                _imgui_cmake "${_imgui_cmake}")
+            # 2. Check for our FetchContent-created target instead of ../freetype dir
+            string(REPLACE
+                "elseif (EXISTS ../freetype)"
+                "elseif (TARGET freetype)"
+                _imgui_cmake "${_imgui_cmake}")
+            # 3. Remove the add_subdirectory(../freetype) — target is already built
+            string(REPLACE
+                "add_subdirectory(../freetype \$\{CMAKE_BINARY_DIR\}/freetype)"
+                "# patched out by ImGuiEx: freetype target already provided"
+                _imgui_cmake "${_imgui_cmake}")
+            file(WRITE "${imgui_SOURCE_DIR}/CMakeLists.txt" "${_imgui_cmake}")
+        endif ()
+    endif ()
+
     add_subdirectory(${imgui_SOURCE_DIR} ${imgui_BINARY_DIR})
 endif ()
 
 # ---------------------------------------------------------------------------
-# Extension options
+# Extension options (prefixed to avoid name clashes)
 # ---------------------------------------------------------------------------
-option(ENABLE_COLOR_TEXT_EDIT "Include the ImGuiColorTextEdit extension" ON)
-option(ENABLE_NODE_EDITOR     "Include the imgui-node-editor extension"  ON)
-option(ENABLE_IMNODES         "Include the imnodes extension"            ON)
-option(ENABLE_NODE_FLOW       "Include the ImNodeFlow extension"         ON)
-option(ENABLE_IMPLOT          "Include the ImPlot extension"             ON)
-option(ENABLE_IMPLOT3D        "Include the ImPlot3D extension"           ON)
-option(ENABLE_IMGUI_KNOBS     "Include the imgui-knobs extension"        ON)
-option(ENABLE_IMSPINNER       "Include the imspinner extension"           ON)
-option(ENABLE_IMGUI_TOGGLE    "Include the imgui_toggle extension"        ON)
-option(ENABLE_SPLITTER        "Include the built-in Splitter widget"      ON)
-option(ENABLE_STACK_LAYOUT    "Include the Stack Layout extension (PR #846)" ON)
-option(ENABLE_DATE_PICKER     "Include the ImGuiDatePicker extension"        ON)
-option(ENABLE_IMGUI_KEYBOARD  "Include the imgui_keyboard extension"         ON)
+option(IMGUIEX_ENABLE_COLOR_TEXT_EDIT "Include the ImGuiColorTextEdit extension" ON)
+option(IMGUIEX_ENABLE_NODE_EDITOR     "Include the imgui-node-editor extension"  ON)
+option(IMGUIEX_ENABLE_IMNODES         "Include the imnodes extension"            ON)
+option(IMGUIEX_ENABLE_NODE_FLOW       "Include the ImNodeFlow extension"         ON)
+option(IMGUIEX_ENABLE_IMPLOT          "Include the ImPlot extension"             ON)
+option(IMGUIEX_ENABLE_IMPLOT3D        "Include the ImPlot3D extension"           ON)
+option(IMGUIEX_ENABLE_IMGUI_KNOBS     "Include the imgui-knobs extension"        ON)
+option(IMGUIEX_ENABLE_IMSPINNER       "Include the imspinner extension"           ON)
+option(IMGUIEX_ENABLE_IMGUI_TOGGLE    "Include the imgui_toggle extension"        ON)
+option(IMGUIEX_ENABLE_SPLITTER        "Include the built-in Splitter widget"      ON)
+option(IMGUIEX_ENABLE_STACK_LAYOUT    "Include the Stack Layout extension (PR #846)" ON)
+option(IMGUIEX_ENABLE_DATE_PICKER     "Include the ImGuiDatePicker extension"        ON)
+option(IMGUIEX_ENABLE_IMGUI_KEYBOARD  "Include the imgui_keyboard extension"         ON)
 
 # ---------------------------------------------------------------------------
 # ImGuiEx — INTERFACE aggregator library (no sources of its own)
@@ -77,7 +121,7 @@ target_link_libraries(ImGuiEx
 # Built-in feature: Splitter
 # (header-only; no external dependency — just sets a compile definition)
 # ---------------------------------------------------------------------------
-if (ENABLE_SPLITTER)
+if (IMGUIEX_ENABLE_SPLITTER)
     target_compile_definitions(ImGuiEx INTERFACE IMGUIEX_ENABLE_SPLITTER)
 endif ()
 
@@ -96,7 +140,7 @@ endif ()
 #                       handling, ItemAdd() bounds update, GStyleVarsInfo entry,
 #                       ImGuiStyle ctor initialisation, forward declarations
 # ---------------------------------------------------------------------------
-if (ENABLE_STACK_LAYOUT)
+if (IMGUIEX_ENABLE_STACK_LAYOUT)
     # Ensure imgui has been populated before we can patch its sources.
     FetchContent_GetProperties(imgui)
     if (NOT imgui_POPULATED)
@@ -272,7 +316,7 @@ endif ()
 # ---------------------------------------------------------------------------
 # Extension: ImGuiColorTextEdit
 # ---------------------------------------------------------------------------
-if (ENABLE_COLOR_TEXT_EDIT)
+if (IMGUIEX_ENABLE_COLOR_TEXT_EDIT)
     FetchContent_Declare(
             ImGuiColorTextEdit
             GIT_REPOSITORY https://github.com/goossens/ImGuiColorTextEdit.git
@@ -309,7 +353,7 @@ endif ()
 # ---------------------------------------------------------------------------
 # Extension: imgui-node-editor
 # ---------------------------------------------------------------------------
-if (ENABLE_NODE_EDITOR)
+if (IMGUIEX_ENABLE_NODE_EDITOR)
     FetchContent_Declare(
             ImGuiNodeEditor
             GIT_REPOSITORY https://github.com/thedmd/imgui-node-editor.git
@@ -394,7 +438,7 @@ endif ()
 # ---------------------------------------------------------------------------
 # Extension: imnodes
 # ---------------------------------------------------------------------------
-if (ENABLE_IMNODES)
+if (IMGUIEX_ENABLE_IMNODES)
     FetchContent_Declare(
             imnodes
             GIT_REPOSITORY https://github.com/Nelarius/imnodes.git
@@ -425,7 +469,7 @@ endif ()
 # ---------------------------------------------------------------------------
 # Extension: ImNodeFlow
 # ---------------------------------------------------------------------------
-if (ENABLE_NODE_FLOW)
+if (IMGUIEX_ENABLE_NODE_FLOW)
     FetchContent_Declare(
             ImNodeFlow
             GIT_REPOSITORY https://github.com/Fattorino/ImNodeFlow.git
@@ -490,7 +534,7 @@ endif ()
 # ---------------------------------------------------------------------------
 # Extension: ImPlot
 # ---------------------------------------------------------------------------
-if (ENABLE_IMPLOT)
+if (IMGUIEX_ENABLE_IMPLOT)
     FetchContent_Declare(
             implot
             GIT_REPOSITORY https://github.com/epezent/implot.git
@@ -523,7 +567,7 @@ endif ()
 # ---------------------------------------------------------------------------
 # Extension: ImPlot3D
 # ---------------------------------------------------------------------------
-if (ENABLE_IMPLOT3D)
+if (IMGUIEX_ENABLE_IMPLOT3D)
     FetchContent_Declare(
             implot3d
             GIT_REPOSITORY https://github.com/brenocq/implot3d.git
@@ -557,7 +601,7 @@ endif ()
 # ---------------------------------------------------------------------------
 # Extension: imgui-knobs
 # ---------------------------------------------------------------------------
-if (ENABLE_IMGUI_KNOBS)
+if (IMGUIEX_ENABLE_IMGUI_KNOBS)
     FetchContent_Declare(
             imguiknobs
             GIT_REPOSITORY https://github.com/altschuler/imgui-knobs.git
@@ -588,7 +632,7 @@ endif ()
 # ---------------------------------------------------------------------------
 # Extension: imgui_toggle
 # ---------------------------------------------------------------------------
-if (ENABLE_IMGUI_TOGGLE)
+if (IMGUIEX_ENABLE_IMGUI_TOGGLE)
     FetchContent_Declare(
             imgui_toggle
             GIT_REPOSITORY https://github.com/cmdwtf/imgui_toggle.git
@@ -622,7 +666,7 @@ endif ()
 # ---------------------------------------------------------------------------
 # Extension: imspinner
 # ---------------------------------------------------------------------------
-if (ENABLE_IMSPINNER)
+if (IMGUIEX_ENABLE_IMSPINNER)
     FetchContent_Declare(
             imspinner
             GIT_REPOSITORY https://github.com/dalerank/imspinner.git
@@ -649,7 +693,7 @@ endif ()
 # ---------------------------------------------------------------------------
 # Extension: ImGuiDatePicker
 # ---------------------------------------------------------------------------
-if (ENABLE_DATE_PICKER)
+if (IMGUIEX_ENABLE_DATE_PICKER)
     FetchContent_Declare(
             ImGuiDatePicker
             GIT_REPOSITORY https://github.com/DnA-IntRicate/ImGuiDatePicker.git
@@ -696,7 +740,7 @@ endif ()
 # ---------------------------------------------------------------------------
 # Extension: imgui_keyboard
 # ---------------------------------------------------------------------------
-if (ENABLE_IMGUI_KEYBOARD)
+if (IMGUIEX_ENABLE_IMGUI_KEYBOARD)
     FetchContent_Declare(
             imgui_keyboard
             GIT_REPOSITORY https://github.com/mgerhardy/imgui_keyboard.git
