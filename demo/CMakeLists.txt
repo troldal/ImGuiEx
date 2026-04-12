@@ -83,3 +83,13 @@ if (ENABLE_STACK_LAYOUT)
     target_link_libraries(StackLayoutDemo PRIVATE ImGuiEx)
 endif ()
 
+if (ENABLE_DATE_PICKER)
+    add_imgui_demo(DatePickerDemo date_picker/main.cpp)
+    target_link_libraries(DatePickerDemo PRIVATE ImGuiEx)
+endif ()
+
+if (ENABLE_IMGUI_KEYBOARD)
+    add_imgui_demo(ImGuiKeyboardDemo imgui_keyboard/main.cpp)
+    target_link_libraries(ImGuiKeyboardDemo PRIVATE ImGuiEx)
+endif ()
+

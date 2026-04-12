@@ -55,6 +55,8 @@ option(ENABLE_IMSPINNER       "Include the imspinner extension"           ON)
 option(ENABLE_IMGUI_TOGGLE    "Include the imgui_toggle extension"        ON)
 option(ENABLE_SPLITTER        "Include the built-in Splitter widget"      ON)
 option(ENABLE_STACK_LAYOUT    "Include the Stack Layout extension (PR #846)" ON)
+option(ENABLE_DATE_PICKER     "Include the ImGuiDatePicker extension"        ON)
+option(ENABLE_IMGUI_KEYBOARD  "Include the imgui_keyboard extension"         ON)
 
 # ---------------------------------------------------------------------------
 # ImGuiEx — INTERFACE aggregator library (no sources of its own)
@@ -642,6 +644,84 @@ if (ENABLE_IMSPINNER)
     # Wire into the ImGuiEx aggregator
     target_link_libraries(ImGuiEx INTERFACE imspinner)
     target_compile_definitions(ImGuiEx INTERFACE IMGUIEX_ENABLE_IMSPINNER)
+endif ()
+
+# ---------------------------------------------------------------------------
+# Extension: ImGuiDatePicker
+# ---------------------------------------------------------------------------
+if (ENABLE_DATE_PICKER)
+    FetchContent_Declare(
+            ImGuiDatePicker
+            GIT_REPOSITORY https://github.com/DnA-IntRicate/ImGuiDatePicker.git
+            GIT_TAG        master
+            GIT_SHALLOW    TRUE
+    )
+
+    FetchContent_GetProperties(ImGuiDatePicker)
+    if (NOT imguidatepicker_POPULATED)
+        FetchContent_Populate(ImGuiDatePicker)
+    endif ()
+
+    # ------------------------------------------------------------------
+    # Compatibility patch: ImGui 1.92 changed PushFont(ImFont*) to
+    # PushFont(ImFont*, float font_size_base_unscaled).
+    # Pass 0.0f as the size to keep the current font size unchanged.
+    # Idempotency: skip if the patched signature is already present.
+    # ------------------------------------------------------------------
+    file(READ "${imguidatepicker_SOURCE_DIR}/ImGuiDatePicker.cpp" _dp_cpp)
+    string(FIND "${_dp_cpp}" "PushFont(altFont, 0.0f)" _dp_done)
+    if (_dp_done EQUAL -1)
+        string(REPLACE
+            "PushFont(altFont);"
+            "PushFont(altFont, 0.0f);"
+            _dp_cpp "${_dp_cpp}")
+        file(WRITE "${imguidatepicker_SOURCE_DIR}/ImGuiDatePicker.cpp" "${_dp_cpp}")
+    endif ()
+
+    add_library(ImGuiDatePicker STATIC
+            ${imguidatepicker_SOURCE_DIR}/ImGuiDatePicker.cpp
+    )
+
+    target_include_directories(ImGuiDatePicker
+            PUBLIC ${imguidatepicker_SOURCE_DIR}
+    )
+
+    target_link_libraries(ImGuiDatePicker PUBLIC imgui)
+
+    # Wire into the ImGuiEx aggregator
+    target_link_libraries(ImGuiEx INTERFACE ImGuiDatePicker)
+    target_compile_definitions(ImGuiEx INTERFACE IMGUIEX_ENABLE_DATE_PICKER)
+endif ()
+
+# ---------------------------------------------------------------------------
+# Extension: imgui_keyboard
+# ---------------------------------------------------------------------------
+if (ENABLE_IMGUI_KEYBOARD)
+    FetchContent_Declare(
+            imgui_keyboard
+            GIT_REPOSITORY https://github.com/mgerhardy/imgui_keyboard.git
+            GIT_TAG        main
+            GIT_SHALLOW    TRUE
+    )
+
+    FetchContent_GetProperties(imgui_keyboard)
+    if (NOT imgui_keyboard_POPULATED)
+        FetchContent_Populate(imgui_keyboard)
+    endif ()
+
+    add_library(imgui_keyboard STATIC
+            ${imgui_keyboard_SOURCE_DIR}/imgui_keyboard.cpp
+    )
+
+    target_include_directories(imgui_keyboard
+            PUBLIC ${imgui_keyboard_SOURCE_DIR}
+    )
+
+    target_link_libraries(imgui_keyboard PUBLIC imgui)
+
+    # Wire into the ImGuiEx aggregator
+    target_link_libraries(ImGuiEx INTERFACE imgui_keyboard)
+    target_compile_definitions(ImGuiEx INTERFACE IMGUIEX_ENABLE_IMGUI_KEYBOARD)
 endif ()
 
 # ---------------------------------------------------------------------------

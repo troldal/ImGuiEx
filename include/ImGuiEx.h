@@ -43,6 +43,25 @@
 #endif // IMGUIEX_ENABLE_STACK_LAYOUT
 
 // ---------------------------------------------------------------------------
+// ImGuiDatePicker  (ENABLE_DATE_PICKER)
+// Provides ImGui::DatePicker and ImGui::DatePickerEx.
+// Both take a std::tm& that is updated in-place when the user selects a date.
+// Returns true on change (same convention as other ImGui input widgets).
+// ---------------------------------------------------------------------------
+#ifdef IMGUIEX_ENABLE_DATE_PICKER
+#include <ImGuiDatePicker.hpp>
+#endif // IMGUIEX_ENABLE_DATE_PICKER
+
+// ---------------------------------------------------------------------------
+// imgui_keyboard  (ENABLE_IMGUI_KEYBOARD)
+// Provides ImKeyboard::Keyboard(), ImKeyboard::KeyboardDemo(), and helpers
+// for highlighting keys and recording keybindings.
+// ---------------------------------------------------------------------------
+#ifdef IMGUIEX_ENABLE_IMGUI_KEYBOARD
+#include <imgui_keyboard.h>
+#endif // IMGUIEX_ENABLE_IMGUI_KEYBOARD
+
+// ---------------------------------------------------------------------------
 // Splitter  (ENABLE_SPLITTER)
 // Extends the ImGui namespace with a draggable panel-divider widget.
 // Uses only the public ImGui API; imgui_internal.h is NOT required.
