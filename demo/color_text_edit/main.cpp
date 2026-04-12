@@ -2,9 +2,9 @@
 // This file is only compiled when ENABLE_COLOR_TEXT_EDIT=ON; no #ifdefs needed.
 
 #include "DemoApp.h"
-#include "ImGuiEx.h"   // includes TextEditor.h via IMGUIEX_ENABLE_COLOR_TEXT_EDIT
+#include <ImGuiEx.hpp>
 
-const wchar_t* GetDemoTitle() { return L"ImGuiColorTextEdit Demo"; }
+const char* GetDemoTitle() { return "ImGuiColorTextEdit Demo"; }
 
 void ShowDemo()
 {

@@ -5,11 +5,9 @@
 // preset-config variants shipped by imgui_toggle_presets.h.
 
 #include "DemoApp.h"
-#include <imgui_toggle.h>
-#include <imgui_toggle_presets.h>
-#include <imgui.h>
+#include <ImGuiEx.hpp>
 
-const wchar_t* GetDemoTitle() { return L"ImGui Toggle Demo"; }
+const char* GetDemoTitle() { return "ImGui Toggle Demo"; }
 
 // Helper: draw a toggle with a status label on the same row.
 static bool LabelledToggle(const char* id, const char* desc, bool* v,

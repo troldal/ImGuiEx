@@ -6,10 +6,9 @@
 // and centering trivial without manual arithmetic.
 
 #include "DemoApp.h"
-#include <ImGuiEx.h>
-#include <imgui.h>
+#include <ImGuiEx.hpp>
 
-const wchar_t* GetDemoTitle() { return L"Stack Layout Demo"; }
+const char* GetDemoTitle() { return "Stack Layout Demo"; }
 
 // ---------------------------------------------------------------------------
 static void ToolbarDemo()

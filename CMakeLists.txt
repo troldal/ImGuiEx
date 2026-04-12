@@ -25,6 +25,22 @@ else ()
 endif ()
 
 # ---------------------------------------------------------------------------
+# GLFW (windowing library — also used by ImGui's GLFW backend)
+# ---------------------------------------------------------------------------
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG 3.4
+        GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(glfw)
+
+# ---------------------------------------------------------------------------
 # ImGui (docking branch) — fetched and configured via a community CMakeLists
 # ---------------------------------------------------------------------------
 FetchContent_Declare(
@@ -408,6 +424,21 @@ if (IMGUIEX_ENABLE_NODE_EDITOR)
         file(WRITE "${imguinodeeditor_SOURCE_DIR}/imgui_extra_math.inl" "${_emi}")
     endif ()
 
+    # Patch B — crude_json.cpp
+    # crude_json.cpp uses std::terminate() but does not include <exception>.
+    # In C++23 mode (Clang 21+), this is no longer transitively available.
+    # Fix: add #include <exception> after the existing includes.
+    # Idempotency: skip if already present.
+    file(READ "${imguinodeeditor_SOURCE_DIR}/crude_json.cpp" _cj)
+    string(FIND "${_cj}" "#include <exception>" _cj_done)
+    if (_cj_done EQUAL -1)
+        string(REPLACE
+                "# include <cmath>"
+                "# include <cmath>\n# include <exception>"
+                _cj "${_cj}")
+        file(WRITE "${imguinodeeditor_SOURCE_DIR}/crude_json.cpp" "${_cj}")
+    endif ()
+
     add_library(ImGuiNodeEditor STATIC
             ${imguinodeeditor_SOURCE_DIR}/crude_json.cpp
             ${imguinodeeditor_SOURCE_DIR}/imgui_canvas.cpp
@@ -769,6 +800,66 @@ if (IMGUIEX_ENABLE_IMGUI_KEYBOARD)
 endif ()
 
 # ---------------------------------------------------------------------------
+# Configuration Summary
+# ---------------------------------------------------------------------------
+message(STATUS "ImGuiEx Configuration:")
+message(STATUS "  FreeType Support: ${IMGUIEX_ENABLE_FREETYPE}")
+
+if (IMGUIEX_ENABLE_COLOR_TEXT_EDIT)
+    message(STATUS "  ✓ ImGuiColorTextEdit")
+endif ()
+
+if (IMGUIEX_ENABLE_NODE_EDITOR)
+    message(STATUS "  ✓ imgui-node-editor")
+endif ()
+
+if (IMGUIEX_ENABLE_IMNODES)
+    message(STATUS "  ✓ imnodes")
+endif ()
+
+if (IMGUIEX_ENABLE_NODE_FLOW)
+    message(STATUS "  ✓ ImNodeFlow")
+endif ()
+
+if (IMGUIEX_ENABLE_IMPLOT)
+    message(STATUS "  ✓ ImPlot")
+endif ()
+
+if (IMGUIEX_ENABLE_IMPLOT3D)
+    message(STATUS "  ✓ ImPlot3D")
+endif ()
+
+if (IMGUIEX_ENABLE_IMGUI_KNOBS)
+    message(STATUS "  ✓ imgui-knobs")
+endif ()
+
+if (IMGUIEX_ENABLE_IMSPINNER)
+    message(STATUS "  ✓ imspinner")
+endif ()
+
+if (IMGUIEX_ENABLE_IMGUI_TOGGLE)
+    message(STATUS "  ✓ imgui_toggle")
+endif ()
+
+if (IMGUIEX_ENABLE_SPLITTER)
+    message(STATUS "  ✓ Splitter (built-in)")
+endif ()
+
+if (IMGUIEX_ENABLE_STACK_LAYOUT)
+    message(STATUS "  ✓ Stack Layout (PR #846)")
+endif ()
+
+if (IMGUIEX_ENABLE_DATE_PICKER)
+    message(STATUS "  ✓ ImGuiDatePicker")
+endif ()
+
+if (IMGUIEX_ENABLE_IMGUI_KEYBOARD)
+    message(STATUS "  ✓ imgui_keyboard")
+endif ()
+
+# ---------------------------------------------------------------------------
 # Demo
 # ---------------------------------------------------------------------------
-add_subdirectory(demo)
+if (PROJECT_IS_TOP_LEVEL)
+    add_subdirectory(demo)
+endif ()

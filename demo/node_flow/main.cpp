@@ -12,10 +12,9 @@
 // Drag from an output socket to an input socket to connect them.
 
 #include "DemoApp.h"
-#include <ImNodeFlow.h>
-#include <imgui.h>
+#include <ImGuiEx.hpp>
 
-const wchar_t* GetDemoTitle() { return L"ImNodeFlow Demo"; }
+const char* GetDemoTitle() { return "ImNodeFlow Demo"; }
 
 // ---------------------------------------------------------------------------
 // Node definitions

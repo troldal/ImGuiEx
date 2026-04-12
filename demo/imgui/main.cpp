@@ -3,7 +3,7 @@
 #include "DemoApp.h"
 #include <imgui.h>
 
-const wchar_t* GetDemoTitle() { return L"ImGui Demo"; }
+const char* GetDemoTitle() { return "ImGui Demo"; }
 
 static bool s_show = true;
 

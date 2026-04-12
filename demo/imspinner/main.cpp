@@ -5,10 +5,9 @@
 // imspinner is header-only — no context management required.
 
 #include "DemoApp.h"
-#include <imspinner.h>
-#include <imgui.h>
+#include <ImGuiEx.hpp>
 
-const wchar_t* GetDemoTitle() { return L"ImSpinner Demo"; }
+const char* GetDemoTitle() { return "ImSpinner Demo"; }
 
 // Draw one spinner cell: the spinner itself, then its name centered below.
 // BeginGroup/EndGroup turns the (spinner + label) pair into a single layout

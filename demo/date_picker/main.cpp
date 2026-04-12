@@ -8,11 +8,11 @@
 // date changes — the same convention as ImGui's other input widgets.
 
 #include "DemoApp.h"
-#include <ImGuiEx.h>
-#include <ctime>
+#include <ImGuiEx.hpp>
 #include <cstdio>
+#include <ctime>
 
-const wchar_t* GetDemoTitle() { return L"ImGuiDatePicker Demo"; }
+const char* GetDemoTitle() { return "ImGuiDatePicker Demo"; }
 
 // ---------------------------------------------------------------------------
 // Helper: initialise a tm to today's local date (time fields zeroed).

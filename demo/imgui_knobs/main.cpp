@@ -5,10 +5,9 @@
 // example and a Stepped knob.
 
 #include "DemoApp.h"
-#include <imgui-knobs.h>
-#include <imgui.h>
+#include <ImGuiEx.hpp>
 
-const wchar_t* GetDemoTitle() { return L"ImGui Knobs Demo"; }
+const char* GetDemoTitle() { return "ImGui Knobs Demo"; }
 
 void ShowDemo()
 {

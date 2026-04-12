@@ -11,12 +11,11 @@
 //  which is set up below).
 
 #include "DemoApp.h"
-#include <imnodes.h>
-#include <imgui.h>
-#include <vector>
+#include <ImGuiEx.hpp>
 #include <algorithm>
+#include <vector>
 
-const wchar_t* GetDemoTitle() { return L"imnodes Demo"; }
+const char* GetDemoTitle() { return "imnodes Demo"; }
 
 // ---------------------------------------------------------------------------
 // Node / attribute / link ID layout

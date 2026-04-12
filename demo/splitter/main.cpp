@@ -10,11 +10,10 @@
 // or height.  ResyncPair() handles proportional rescaling on window resize.
 
 #include "DemoApp.h"
-#include <ImGuiEx.h>
-#include <imgui.h>
+#include <ImGuiEx.hpp>
 #include <cmath>    // fabsf
 
-const wchar_t* GetDemoTitle() { return L"Splitter Demo"; }
+const char* GetDemoTitle() { return "Splitter Demo"; }
 
 // Proportionally rescale *s1 and *s2 so their sum equals new_total.
 // No-op when the sum is already within 0.5 px of new_total.

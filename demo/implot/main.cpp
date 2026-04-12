@@ -3,9 +3,9 @@
 // Delegates entirely to ImPlot::ShowDemoWindow(), which opens its own window.
 
 #include "DemoApp.h"
-#include <implot.h>
+#include <ImGuiEx.hpp>
 
-const wchar_t* GetDemoTitle() { return L"ImPlot Demo"; }
+const char* GetDemoTitle() { return "ImPlot Demo"; }
 
 void ShowDemo()
 {

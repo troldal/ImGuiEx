@@ -2,11 +2,11 @@
 // This file is only compiled when ENABLE_NODE_EDITOR=ON; no #ifdefs needed.
 
 #include "DemoApp.h"
-#include "ImGuiEx.h"   // includes imgui_node_editor.h via IMGUIEX_ENABLE_NODE_EDITOR
+#include <ImGuiEx.hpp>
 
 namespace ed = ax::NodeEditor;
 
-const wchar_t* GetDemoTitle() { return L"ImGui Node Editor Demo"; }
+const char* GetDemoTitle() { return "ImGui Node Editor Demo"; }
 
 void ShowDemo()
 {

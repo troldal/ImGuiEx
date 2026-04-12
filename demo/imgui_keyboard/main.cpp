@@ -13,9 +13,9 @@
 //   - Style editor     (sizes and colours)
 
 #include "DemoApp.h"
-#include <ImGuiEx.h>
+#include <ImGuiEx.hpp>
 
-const wchar_t* GetDemoTitle() { return L"ImGui Keyboard Demo"; }
+const char* GetDemoTitle() { return "ImGui Keyboard Demo"; }
 
 void ShowDemo()
 {
