@@ -25,22 +25,6 @@ else ()
 endif ()
 
 # ---------------------------------------------------------------------------
-# GLFW (windowing library — also used by ImGui's GLFW backend)
-# ---------------------------------------------------------------------------
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
-
-FetchContent_Declare(
-        glfw
-        GIT_REPOSITORY https://github.com/glfw/glfw.git
-        GIT_TAG 3.4
-        GIT_SHALLOW TRUE
-)
-FetchContent_MakeAvailable(glfw)
-
-# ---------------------------------------------------------------------------
 # ImGui (docking branch) — fetched and configured via a community CMakeLists
 # ---------------------------------------------------------------------------
 FetchContent_Declare(
@@ -104,19 +88,19 @@ endif ()
 # ---------------------------------------------------------------------------
 # Extension options (prefixed to avoid name clashes)
 # ---------------------------------------------------------------------------
-option(IMGUIEX_ENABLE_COLOR_TEXT_EDIT "Include the ImGuiColorTextEdit extension" ON)
-option(IMGUIEX_ENABLE_NODE_EDITOR     "Include the imgui-node-editor extension"  ON)
-option(IMGUIEX_ENABLE_IMNODES         "Include the imnodes extension"            ON)
-option(IMGUIEX_ENABLE_NODE_FLOW       "Include the ImNodeFlow extension"         ON)
-option(IMGUIEX_ENABLE_IMPLOT          "Include the ImPlot extension"             ON)
-option(IMGUIEX_ENABLE_IMPLOT3D        "Include the ImPlot3D extension"           ON)
-option(IMGUIEX_ENABLE_IMGUI_KNOBS     "Include the imgui-knobs extension"        ON)
-option(IMGUIEX_ENABLE_IMSPINNER       "Include the imspinner extension"           ON)
-option(IMGUIEX_ENABLE_IMGUI_TOGGLE    "Include the imgui_toggle extension"        ON)
-option(IMGUIEX_ENABLE_SPLITTER        "Include the built-in Splitter widget"      ON)
-option(IMGUIEX_ENABLE_STACK_LAYOUT    "Include the Stack Layout extension (PR #846)" ON)
-option(IMGUIEX_ENABLE_DATE_PICKER     "Include the ImGuiDatePicker extension"        ON)
-option(IMGUIEX_ENABLE_IMGUI_KEYBOARD  "Include the imgui_keyboard extension"         ON)
+option(IMGUIEX_ENABLE_COLOR_TEXT_EDIT "Include the ImGuiColorTextEdit extension" OFF)
+option(IMGUIEX_ENABLE_NODE_EDITOR     "Include the imgui-node-editor extension"  OFF)
+option(IMGUIEX_ENABLE_IMNODES         "Include the imnodes extension"            OFF)
+option(IMGUIEX_ENABLE_NODE_FLOW       "Include the ImNodeFlow extension"         OFF)
+option(IMGUIEX_ENABLE_IMPLOT          "Include the ImPlot extension"             OFF)
+option(IMGUIEX_ENABLE_IMPLOT3D        "Include the ImPlot3D extension"           OFF)
+option(IMGUIEX_ENABLE_IMGUI_KNOBS     "Include the imgui-knobs extension"        OFF)
+option(IMGUIEX_ENABLE_IMSPINNER       "Include the imspinner extension"           OFF)
+option(IMGUIEX_ENABLE_IMGUI_TOGGLE    "Include the imgui_toggle extension"        OFF)
+option(IMGUIEX_ENABLE_SPLITTER        "Include the built-in Splitter widget"      OFF)
+option(IMGUIEX_ENABLE_STACK_LAYOUT    "Include the Stack Layout extension (PR #846)" OFF)
+option(IMGUIEX_ENABLE_DATE_PICKER     "Include the ImGuiDatePicker extension"        OFF)
+option(IMGUIEX_ENABLE_IMGUI_KEYBOARD  "Include the imgui_keyboard extension"         OFF)
 
 # ---------------------------------------------------------------------------
 # ImGuiEx — INTERFACE aggregator library (no sources of its own)
@@ -861,5 +845,22 @@ endif ()
 # Demo
 # ---------------------------------------------------------------------------
 if (PROJECT_IS_TOP_LEVEL)
+
+    # ---------------------------------------------------------------------------
+    # GLFW (windowing library — also used by ImGui's GLFW backend)
+    # ---------------------------------------------------------------------------
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(
+            glfw
+            GIT_REPOSITORY https://github.com/glfw/glfw.git
+            GIT_TAG 3.4
+            GIT_SHALLOW TRUE
+    )
+    FetchContent_MakeAvailable(glfw)
+
     add_subdirectory(demo)
 endif ()
